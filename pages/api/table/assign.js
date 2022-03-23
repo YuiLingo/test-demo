@@ -11,6 +11,7 @@ export default async function handler(req, res) {
         let { headCount } = req.query;
         let tableAssigned = [];
         let queue, leftQueue;
+        let result = [];
 
         let firstQueue = await Queue.findOne().sort({ id: 'asc'});
 
@@ -69,6 +70,11 @@ export default async function handler(req, res) {
 
                     if(assignable) {
 
+                        result = [...result, {
+                            table: table,
+                            headCount: table.chairs.length > headCount? headCount: table.chairs.length
+                        }];
+
                         headCount -= table.chairs.length;
 
                         return true;
@@ -77,18 +83,23 @@ export default async function handler(req, res) {
                     return false;
                 });
 
+
                 tables = tables.filter(function(table, index) {
 
                     return assignedTable._id != table._id;
                 });
 
-                // assigned all
+                    // assigned all
                 if(headCount <= 0) {
 
                     if(!empty(firstQueue)) {
 
                         await firstQueue.deleteOne();
                     }
+
+                } else {
+
+
                 }
 
                 tableAssigned.push(assignedTable);
@@ -136,9 +147,10 @@ export default async function handler(req, res) {
         }
 
         return {
-            tableAssigned: tableAssigned,
+            assigned: result,
             queue: queue, // new queue
             leftQueue: leftQueue, // not completed assign queue
+            firstQueue: firstQueue, // if process is first queue
         };
     });
 }
