@@ -17,11 +17,14 @@ export default async function handler(req, res) {
             throw 'Table not found';
         }
 
-        const chairResult = await Chair.deleteMany({_id:{$in:table.chairs}});
+        if(table.chairs.length > 0) {
 
-        if(!chairResult.deletedCount) {
+            const chairResult = await Chair.deleteMany({_id:{$in:table.chairs}});
 
-            throw 'Chair deleting fail';
+            if(!chairResult.deletedCount) {
+
+                throw 'Chair deleting fail';
+            }
         }
 
         const tableResult = await Table.deleteOne({ _id: table._id });
@@ -31,6 +34,6 @@ export default async function handler(req, res) {
             throw 'Table deleting fail';
         }
 
-        return;
+        return table.name;
     });
 }
