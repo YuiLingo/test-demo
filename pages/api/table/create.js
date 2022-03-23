@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
         const {tableCount} = req.body;
 
-        if(empty(tableCount) || !validator.isInt(tableCount.toString(), {gt: 1})) {
+        if(empty(tableCount) || !validator.isInt(tableCount.toString(), {gt: 0})) {
 
             throw 'Invalid input for number of table';
         }

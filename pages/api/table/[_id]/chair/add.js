@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         const { _id } = req.query;
         const {chairCount} = req.body;
 
-        if(empty(chairCount) || !validator.isInt(chairCount.toString(), {gt: 1})) {
+        if(empty(chairCount) || !validator.isInt(chairCount.toString(), {gt: 0})) {
 
             throw 'Invalid input for number of chair';
         }
