@@ -232,7 +232,10 @@ export default function Admin() {
 
 				} else {
 
-					assignedQueue = data.firstQueue;
+                    if(empty(data.leftQueue)) {
+
+                        assignedQueue = data.firstQueue;
+                    }
 				}
 
 				getAllTables();
