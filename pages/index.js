@@ -12,12 +12,12 @@ export default function Admin() {
     const [tables, setTables] = useState([]);
     const [queues, setQueues] = useState([]);
 	const [customerCount, setCustomerCount] = useState(0);
-	const [assignment, seAssignment] = useState({});
+	const [assignment, setAssignment] = useState({});
 
     useEffect(() => {
 
         getAllTables();
-        getAllQueue();
+        getAllQueue({});
     }, []);
 
     const getAllTables = async () => {
@@ -62,7 +62,7 @@ export default function Admin() {
 
     };
 
-    const getAllQueue = async () => {
+    const getAllQueue = async (assignedQueue) => {
 
         let response = await axios.get('/api/queue', {
                                   params: {
@@ -83,7 +83,16 @@ export default function Admin() {
 
             if(response.data.status == 200) {
 
-                setQueues(response.data.result);
+				let oldQueue = [];
+
+				if(!empty(assignedQueue)) {
+
+					oldQueue = queues.filter(queue => {
+
+						return queue._id == assignedQueue._id;
+					});
+				}
+                setQueues([...oldQueue, ...response.data.result]);
 
             } else {
 
@@ -172,6 +181,7 @@ export default function Admin() {
 
                         if(response.data.status == 200) {
 
+							setAssignment(response.data.result);
                             return response.data.result;
 
                         } else {
@@ -194,10 +204,8 @@ export default function Admin() {
 
             if (result.isConfirmed) {
 
-                getAllTables();
-				getAllQueue();
-
 				let data = result.value;
+				let assignedQueue = {};
 
 				if(empty(data.firstQueue)) {
 
@@ -222,11 +230,44 @@ export default function Admin() {
 						text: text
 					});
 
+				} else {
+
+					assignedQueue = data.firstQueue;
 				}
+
+				getAllTables();
+				getAllQueue(assignedQueue);
             }
         })
 	}
 
+	const queueHeadToFormatter = (queue) => {
+
+		let text = 'queuing';
+
+		if(!empty(assignment.firstQueue)) {
+
+			if(queue._id == assignment.firstQueue._id) {
+
+				text = (!empty(assignment.assigned) || !empty(assignment.leftQueue)) ? '': 'queuing';
+
+				if(!empty(assignment.assigned) && Array.isArray(assignment.assigned)) {
+
+					for(let i = 0; i < assignment.assigned.length; i++) {
+
+						text += `${assignment.assigned[i].headCount} customer head to ${assignment.assigned[i].table.name}, `;
+					}
+				}
+
+				if(!empty(assignment.leftQueue)) {
+
+					text += `${assignment.leftQueue.headCount} customers required to wait till next available table`;
+				}
+			}
+		}
+
+		return text;
+	}
     return (
       <div class="">
         <Head>
@@ -270,7 +311,7 @@ export default function Admin() {
                                         <td>{++index}</td>
                                         <td>{queue.id}</td>
                                         <td>{queue.headCount}</td>
-                                        <td className={ 'bg-secondary'}>{'queuing'}</td>
+                                        <td>{queueHeadToFormatter(queue)}</td>
                                         <td>
 
                                         </td>
